@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "catsfi-finsight"
+version = "1.0.0"
+description = "CATsFi FinSight: production-grade RAG + agentic Q&A over SEC filings (10-K / 10-Q) with XBRL fundamentals and CATsFi technical analysis tools."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Aybars Yılmaz" }]
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "httpx>=0.27",
+  "qdrant-client>=1.12",
+  "langgraph>=0.2.40",
+  "beautifulsoup4>=4.12",
+  "lxml>=5.2",
+  "tiktoken>=0.7",
+  "numpy>=1.26",
+  "rapidfuzz>=3.9",
+  "pyyaml>=6.0",
+  "prometheus-client>=0.20",
+  "opentelemetry-sdk>=1.25",
+  "opentelemetry-exporter-otlp-proto-http>=1.25",
+  "opentelemetry-instrumentation-fastapi>=0.46b0",
+  "openai>=1.40",
+  "anthropic>=0.34",
+]
+
+[project.optional-dependencies]
+# Local ONNX embeddings + cross-encoder reranker (no API key needed).
+local-models = ["fastembed>=0.4"]
+# Experiment tracking for evaluation runs.
+mlflow = ["mlflow>=2.14"]
+dev = ["pytest>=8", "pytest-cov>=5", "respx>=0.21", "ruff>=0.6"]
+
+[project.scripts]
+finsight = "finsight.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+finsight = ["prompts/templates/*.yaml", "static/*", "eval/datasets/*.jsonl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501", "B008"]

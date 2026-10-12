@@ -1,0 +1,14 @@
+.venv
+.git
+.github
+data
+reports
+scratch
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+.coverage
+.env
+*.egg-info
+deploy/k8s

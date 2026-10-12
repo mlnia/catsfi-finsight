@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CATsFi FinSight</title>
+<style>
+:root{--bg:#0f1420;--panel:#171e2e;--panel2:#1d2639;--line:#2a3550;--text:#e6eaf2;--muted:#93a0bb;--accent:#4f8cff;--ok:#2fbf71;--warn:#f5a524;--bad:#ef4f4f;--chip:#24304a}
+@media (prefers-color-scheme: light){:root{--bg:#f5f7fb;--panel:#fff;--panel2:#f0f3f9;--line:#dde3ee;--text:#1a2233;--muted:#5d6b85;--chip:#e8eefb}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:2;flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:.2px}.brand span{color:var(--accent)}
+nav{display:flex;gap:4px}nav button{background:none;border:0;color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer;font:inherit}
+nav button.active{background:var(--panel2);color:var(--text)}
+.cfg{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px}
+input,select,textarea{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:inherit}
+textarea{width:100%;resize:vertical;min-height:72px}
+button.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600;cursor:pointer}
+button.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}
+main{max-width:1020px;margin:0 auto;padding:22px 16px 60px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:0 0 auto}
+.grow{flex:1 1 220px!important}
+.answer{white-space:pre-wrap;font-size:15.5px}
+.cite{display:inline-block;background:var(--chip);color:var(--accent);border-radius:6px;padding:0 6px;font-size:12px;font-weight:600;cursor:pointer;margin:0 1px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.badge{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.badge.ok{color:var(--ok);border-color:var(--ok)}.badge.warn{color:var(--warn);border-color:var(--warn)}.badge.bad{color:var(--bad);border-color:var(--bad)}
+.src{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:var(--panel2)}
+.src.hl{outline:2px solid var(--accent)}
+.src .lbl{font-weight:600;font-size:13px}.src q{display:block;color:var(--muted);font-size:13.5px;margin-top:4px}
+.src a{color:var(--accent);font-size:12px}
+.msg{padding:12px 14px;border-radius:10px;margin:10px 0;white-space:pre-wrap}
+.msg.user{background:var(--panel2);margin-left:15%}.msg.bot{background:var(--panel);border:1px solid var(--line);margin-right:8%}
+.tool{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--muted)}
+.approval{border:1px solid var(--warn);border-radius:10px;padding:12px;margin:10px 0;background:rgba(245,165,36,.08)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+.muted{color:var(--muted)}.hidden{display:none}
+.examples button{background:var(--chip);color:var(--text);border:0;border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer;margin:4px 4px 0 0}
+.err{color:var(--bad)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">CATsFi <span>FinSight</span></div>
+  <nav>
+    <button data-tab="ask" class="active">Ask filings</button>
+    <button data-tab="agent">Research agent</button>
+    <button data-tab="index">Index</button>
+  </nav>
+  <div class="cfg"><span id="cfgInfo"></span><input id="apiKey" type="password" placeholder="API key (optional)" size="16"></div>
+</header>
+<main>
+  <!-- ASK -->
+  <section id="tab-ask">
+    <div class="panel">
+      <textarea id="q" placeholder="Ask about any indexed 10-K / 10-Q, e.g. What are Apple's main supply chain risks?"></textarea>
+      <div class="row" style="margin-top:10px">
+        <select id="fTicker"><option value="">All companies</option></select>
+        <select id="fForm"><option value="">10-K & 10-Q</option><option>10-K</option><option>10-Q</option></select>
+        <select id="fPrompt"></select>
+        <span class="grow"></span>
+        <button class="primary" id="askBtn">Ask</button>
+      </div>
+      <div class="examples" id="askEx"></div>
+    </div>
+    <div id="askOut"></div>
+  </section>
+
+  <!-- AGENT -->
+  <section id="tab-agent" class="hidden">
+    <div class="panel">
+      <div id="chat"><div class="muted">The agent combines filing search, SEC XBRL fundamentals and CATsFi technical analysis (RSI, divergences, S/R zones). Indexing new companies requires your approval.</div></div>
+      <div class="row" style="margin-top:12px">
+        <input id="agentMsg" class="grow" placeholder="e.g. Compare AAPL and MSFT revenue, then show the RSI for AAPL">
+        <button class="primary" id="agentBtn">Send</button>
+        <button class="ghost" id="agentNew">New thread</button>
+      </div>
+      <div class="examples" id="agentEx"></div>
+    </div>
+  </section>
+
+  <!-- INDEX -->
+  <section id="tab-index" class="hidden">
+    <div class="panel">
+      <div class="row">
+        <input id="ingTickers" class="grow" placeholder="Tickers, e.g. AAPL, MSFT, NVDA">
+        <select id="ingForm"><option>10-K</option><option>10-Q</option></select>
+        <button class="primary" id="ingBtn">Ingest (admin)</button>
+      </div>
+      <div id="ingOut" class="muted" style="margin-top:8px"></div>
+    </div>
+    <div class="panel"><table><thead><tr><th>Ticker</th><th>Company</th><th>Form</th><th>FY</th><th>Filed</th><th>Chunks</th></tr></thead><tbody id="docs"></tbody></table></div>
+  </section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let key = ""; try { key = localStorage.getItem("finsight_key") || ""; } catch (e) {}
+$("#apiKey").value = key;
+$("#apiKey").addEventListener("change", e => { key = e.target.value; try { localStorage.setItem("finsight_key", key); } catch (e) {} });
+
+async function api(path, body) {
+  const r = await fetch(path, {method: body ? "POST" : "GET", headers: {"Content-Type": "application/json", ...(key ? {"X-API-Key": key} : {})}, body: body ? JSON.stringify(body) : undefined});
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.detail ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)) : r.statusText);
+  return data;
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
+  ["ask","agent","index"].forEach(t => $("#tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  if (b.dataset.tab === "index") loadDocs();
+});
+
+function withCites(text, prefix) {
+  return esc(text).replace(/\[([A-Za-z0-9:_.\-]+)\]/g, (m, id) => `<span class="cite" data-ref="${prefix}${id}">${id}</span>`);
+}
+function badges(g, extra) {
+  const cls = {pass:"ok", flagged:"warn", abstained:"warn", blocked:"bad"}[g.action] || "";
+  let h = `<span class="badge ${cls}">guardrails: ${esc(g.action)}</span>`;
+  if (g.groundedness != null) h += `<span class="badge ${g.groundedness >= .7 ? "ok" : "warn"}">groundedness ${(+g.groundedness).toFixed(2)}</span>`;
+  (g.input_flags || []).forEach(f => h += `<span class="badge bad">${esc(f)}</span>`);
+  (g.pii_masked || []).forEach(f => h += `<span class="badge warn">PII masked: ${esc(f)}</span>`);
+  if ((g.quarantined_chunks || []).length) h += `<span class="badge warn">${g.quarantined_chunks.length} chunk(s) sanitized</span>`;
+  (g.unsupported_numbers || []).forEach(n => h += `<span class="badge bad">unverified number ${esc(n)}</span>`);
+  return h + (extra || "");
+}
+function hookCites(root) {
+  root.querySelectorAll(".cite").forEach(c => c.onclick = () => {
+    const el = document.getElementById(c.dataset.ref); if (!el) return;
+    el.scrollIntoView({behavior: "smooth", block: "center"}); el.classList.add("hl"); setTimeout(() => el.classList.remove("hl"), 1600);
+  });
+}
+
+// ---- ASK
+async function ask() {
+  const question = $("#q").value.trim(); if (!question) return;
+  const filters = {}; if ($("#fTicker").value) filters.ticker = $("#fTicker").value; if ($("#fForm").value) filters.form = $("#fForm").value;
+  $("#askBtn").disabled = true; $("#askOut").innerHTML = `<div class="panel muted">Retrieving and verifying…</div>`;
+  try {
+    const r = await api("/v1/query", {question, filters: Object.keys(filters).length ? filters : null, prompt_version: $("#fPrompt").value || null});
+    const extra = `<span class="badge">confidence ${esc(r.confidence)}</span><span class="badge">${r.latency_ms} ms</span><span class="badge">$${r.usage.cost_usd}</span><span class="badge">${esc(r.prompt_version)}</span><span class="badge">${esc(r.model)}</span>${r.cached ? '<span class="badge ok">cached</span>' : ""}`;
+    $("#askOut").innerHTML = `<div class="panel"><div class="answer">${withCites(r.answer, "src-")}</div><div class="meta">${badges(r.guardrails, extra)}</div>
+      ${r.sources.map(s => `<div class="src" id="src-${esc(s.chunk_id)}"><div class="lbl">[${esc(s.chunk_id)}] ${esc(s.label)}</div>${s.quote ? `<q>${esc(s.quote)}</q>` : ""}${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">open filing ↗</a>` : ""}</div>`).join("")}</div>`;
+    hookCites($("#askOut"));
+  } catch (e) { $("#askOut").innerHTML = `<div class="panel err">${esc(e.message)}</div>`; }
+  $("#askBtn").disabled = false;
+}
+$("#askBtn").onclick = ask; $("#q").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) ask(); });
+
+// ---- AGENT
+let thread = null;
+function addMsg(cls, html) { const d = document.createElement("div"); d.className = "msg " + cls; d.innerHTML = html; $("#chat").appendChild(d); d.scrollIntoView({block: "end"}); return d; }
+function renderAgent(r) {
+  const tools = (r.tool_trace || []).slice(-6).map(t => `<div class="tool">↳ ${esc(t.tool)}(${esc(JSON.stringify(t.arguments))}) ${t.ok ? "✓" : "✗ " + esc(t.error || "")}</div>`).join("");
+  if (r.status === "awaiting_approval") {
+    const d = addMsg("bot", `${tools}<div class="approval"><b>Approval required</b>${r.pending_approval.map(c => `<div class="tool">${esc(c.name)}(${esc(JSON.stringify(c.arguments))})</div>`).join("")}
+      <div class="row" style="margin-top:8px"><button class="primary">Approve</button><button class="ghost">Reject</button></div></div>`);
+    const [ok, no] = d.querySelectorAll("button");
+    ok.onclick = () => decide(true, d); no.onclick = () => decide(false, d);
+    return;
+  }
+  const u = r.usage || {};
+  addMsg("bot", `${tools}<div class="answer" style="margin-top:6px">${withCites(r.answer || "", "")}</div><div class="meta">${badges(r.guardrails || {}, `<span class="badge">${r.latency_ms} ms</span><span class="badge">${(u.input_tokens||0)+(u.output_tokens||0)} tokens · $${u.cost_usd||0}</span>`)}</div>`);
+}
+async function decide(approved, el) {
+  el.querySelectorAll("button").forEach(b => b.disabled = true);
+  try { renderAgent(await api(`/v1/agent/${thread}/approval`, {approved, reason: approved ? null : "rejected in UI"})); }
+  catch (e) { addMsg("bot", `<span class="err">${esc(e.message)}</span>`); }
+}
+async function send() {
+  const message = $("#agentMsg").value.trim(); if (!message) return;
+  addMsg("user", esc(message)); $("#agentMsg").value = ""; $("#agentBtn").disabled = true;
+  const wait = addMsg("bot", `<span class="muted">Thinking & calling tools…</span>`);
+  try { const r = await api("/v1/agent/chat", {message, thread_id: thread}); thread = r.thread_id; wait.remove(); renderAgent(r); }
+  catch (e) { wait.innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+  $("#agentBtn").disabled = false;
+}
+$("#agentBtn").onclick = send; $("#agentMsg").addEventListener("keydown", e => { if (e.key === "Enter") send(); });
+$("#agentNew").onclick = () => { thread = null; $("#chat").innerHTML = ""; };
+
+// ---- INDEX
+async function loadDocs() {
+  try {
+    const docs = await api("/v1/documents");
+    $("#docs").innerHTML = docs.map(d => `<tr><td><b>${esc(d.ticker)}</b></td><td>${esc(d.company)}</td><td>${esc(d.form)}</td><td>${esc(d.fiscal_year)}</td><td>${esc(d.filing_date)}</td><td>${d.chunks}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">Nothing indexed yet.</td></tr>`;
+    const sel = $("#fTicker"), cur = sel.value; sel.innerHTML = `<option value="">All companies</option>` + [...new Set(docs.map(d => d.ticker))].map(t => `<option ${t === cur ? "selected" : ""}>${esc(t)}</option>`).join("");
+  } catch (e) { $("#docs").innerHTML = `<tr><td colspan="6" class="err">${esc(e.message)}</td></tr>`; }
+}
+$("#ingBtn").onclick = async () => {
+  const tickers = $("#ingTickers").value.split(/[ ,]+/).filter(Boolean); if (!tickers.length) return;
+  $("#ingBtn").disabled = true; $("#ingOut").textContent = "Downloading from SEC EDGAR, parsing, chunking, embedding…";
+  try { const r = await api("/v1/ingest", {tickers, forms: [$("#ingForm").value]}); $("#ingOut").textContent = r.filings.map(f => `${f.ticker} ${f.form} ${f.status} (${f.chunks} chunks)`).join(" · "); loadDocs(); }
+  catch (e) { $("#ingOut").innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+  $("#ingBtn").disabled = false;
+};
+
+// ---- init
+const ex = (el, items, fn) => { $(el).innerHTML = items.map(t => `<button>${esc(t)}</button>`).join(""); $(el).querySelectorAll("button").forEach(b => b.onclick = () => fn(b.textContent)); };
+ex("#askEx", ["What are the main supply chain risks?", "How much was spent on research and development?", "How is cybersecurity risk governed?"], t => { $("#q").value = t; ask(); });
+ex("#agentEx", ["What was Apple's revenue and net income over the last 3 years?", "Give me the RSI and support/resistance for AAPL and BTCUSDT", "Ingest the latest 10-K filing for NVDA"], t => { $("#agentMsg").value = t; send(); });
+(async () => {
+  try { const c = await api("/v1/config"); $("#cfgInfo").textContent = `${c.llm_provider} · ${c.model} · ${c.embedding_provider}`; } catch (e) {}
+  try { const p = await api("/v1/prompts"); $("#fPrompt").innerHTML = `<option value="">default prompt</option>` + p.filter(x => x.ref.startsWith("rag_answer")).map(x => `<option>${esc(x.ref)}</option>`).join(""); } catch (e) {}
+  loadDocs();
+})();
+</script>
+</body>
+</html>

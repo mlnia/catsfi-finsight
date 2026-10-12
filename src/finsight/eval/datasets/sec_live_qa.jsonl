@@ -1,0 +1,12 @@
+{"id": "l01", "ticker": "AAPL", "question": "What does Apple say about risks from its reliance on outsourcing partners for manufacturing?", "expected_section": "item_1a", "keywords": ["outsourcing", "manufacturing"], "answerable": true}
+{"id": "l02", "ticker": "AAPL", "question": "What were Apple's total net sales by year in the latest annual report?", "expected_section": "item_8", "keywords": ["net sales"], "answerable": true}
+{"id": "l03", "ticker": "AAPL", "question": "How much did Apple spend on research and development?", "expected_section": "item_8", "keywords": ["research and development"], "answerable": true}
+{"id": "l04", "ticker": "AAPL", "question": "How does Apple describe its cybersecurity risk management and governance?", "expected_section": "item_1c", "keywords": ["cybersecurity"], "answerable": true}
+{"id": "l05", "ticker": "MSFT", "question": "What risks does Microsoft describe related to artificial intelligence?", "expected_section": "item_1a", "keywords": ["AI"], "answerable": true}
+{"id": "l06", "ticker": "MSFT", "question": "How does Microsoft describe its segments?", "expected_section": "item_1", "keywords": ["segment"], "answerable": true}
+{"id": "l07", "ticker": "MSFT", "question": "What drove changes in Microsoft Cloud revenue?", "expected_section": "item_7", "keywords": ["cloud"], "answerable": true}
+{"id": "l08", "ticker": "NVDA", "question": "What does NVIDIA say about export controls affecting its products?", "expected_section": "item_1a", "keywords": ["export"], "answerable": true}
+{"id": "l09", "ticker": "NVDA", "question": "How does NVIDIA describe Data Center revenue trends?", "expected_section": "item_7", "keywords": ["Data Center"], "answerable": true}
+{"id": "l10", "ticker": "NVDA", "question": "Who manufactures NVIDIA's semiconductor wafers?", "expected_section": "item_1a", "keywords": ["TSMC"], "answerable": true}
+{"id": "l11", "ticker": "AAPL", "question": "What is Apple's plan for a lunar manufacturing base?", "expected_section": null, "keywords": [], "answerable": false}
+{"id": "l12", "ticker": "NVDA", "question": "What was NVIDIA's revenue from selling bananas?", "expected_section": null, "keywords": [], "answerable": false}

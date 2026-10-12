@@ -1,0 +1,14 @@
+{"id": "f01", "question": "Which supplier does Northwind Robotics depend on for lidar sensors?", "expected_section": "item_1a", "keywords": ["Kestrel Semiconductor"], "answerable": true}
+{"id": "f02", "question": "What was Northwind's total net revenue in fiscal 2025 and how much did it grow?", "expected_section": "item_7", "keywords": ["2,418", "18%"], "answerable": true}
+{"id": "f03", "question": "How did gross margin change in fiscal 2025?", "expected_section": "item_7", "keywords": ["46.5%", "43.1%"], "answerable": true}
+{"id": "f04", "question": "What was research and development expense in fiscal 2025?", "expected_section": "item_7", "keywords": ["512"], "answerable": true}
+{"id": "f05", "question": "What were diluted earnings per share in fiscal 2025 compared with the prior year?", "expected_section": "item_7", "keywords": ["2.31", "1.62"], "answerable": true}
+{"id": "f06", "question": "What share of revenue came from the three largest customers?", "expected_section": "item_1a", "keywords": ["41%"], "answerable": true}
+{"id": "f07", "question": "Where are a significant portion of components manufactured?", "expected_section": "item_1a", "keywords": ["Taiwan", "Malaysia"], "answerable": true}
+{"id": "f08", "question": "How many full-time employees does the company have?", "expected_section": "item_1", "keywords": ["4,200"], "answerable": true}
+{"id": "f09", "question": "What capital expenditures are planned for fiscal 2026 and for what purpose?", "expected_section": "item_7", "keywords": ["140 million", "Monterrey"], "answerable": true}
+{"id": "f10", "question": "How is Fleetmind Software revenue recognized?", "expected_section": "item_1", "keywords": ["ratably"], "answerable": true}
+{"id": "f11", "question": "What convertible notes does the company have outstanding?", "expected_section": "item_1a", "keywords": ["1.2 billion", "2029"], "answerable": true}
+{"id": "f12", "question": "What were cash and cash equivalents at year end?", "expected_section": "item_7", "keywords": ["1,064"], "answerable": true}
+{"id": "f13", "question": "Who is the chief executive officer of Northwind Robotics and what is their salary?", "expected_section": null, "keywords": [], "answerable": false}
+{"id": "f14", "question": "What is the company's dividend policy for quantum computing subsidiaries in Antarctica?", "expected_section": null, "keywords": [], "answerable": false}

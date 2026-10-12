@@ -1,0 +1,25 @@
+# One-click demo deploy on Render (Blueprint). Single container with the embedded on-disk Qdrant
+# store on a persistent disk; seeds AAPL / MSFT / NVDA 10-Ks on first boot.
+services:
+  - type: web
+    name: catsfi-finsight
+    runtime: docker
+    plan: starter
+    healthCheckPath: /healthz
+    disk:
+      name: finsight-data
+      mountPath: /app/data
+      sizeGB: 2
+    envVars:
+      - key: ENV
+        value: prod
+      - key: SEED_TICKERS
+        value: AAPL,MSFT,NVDA
+      - key: SEC_USER_AGENT
+        sync: false          # e.g. "CATsFi FinSight research you@example.com"
+      - key: API_KEYS
+        sync: false          # e.g. "demo-viewer-key:viewer,your-admin-key:admin"
+      - key: LLM_PROVIDER
+        value: offline       # switch to openai / anthropic / azure_openai and add the key below
+      - key: OPENAI_API_KEY
+        sync: false

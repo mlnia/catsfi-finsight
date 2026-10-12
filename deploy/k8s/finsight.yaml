@@ -1,0 +1,89 @@
+# kubectl apply -k deploy/k8s   (create the secret first, see README)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: finsight-config
+data:
+  ENV: prod
+  QDRANT_URL: http://qdrant:6333
+  EMBEDDING_PROVIDER: fastembed
+  RERANKER: cross-encoder
+  LLM_PROVIDER: openai
+  LLM_MODEL: gpt-4o-mini
+  GUARDRAIL_MODE: block
+  RAG_PROMPT: rag_answer@v2
+  SEED_TICKERS: AAPL,MSFT,NVDA
+  OTEL_SERVICE_NAME: catsfi-finsight
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finsight-api
+  labels: { app: finsight-api }
+spec:
+  # Agent checkpoints / pending approvals are in-process -> 1 replica (or swap in a Postgres checkpointer to scale out).
+  replicas: 1
+  selector: { matchLabels: { app: finsight-api } }
+  template:
+    metadata:
+      labels: { app: finsight-api }
+      annotations: { prometheus.io/scrape: "true", prometheus.io/port: "8000", prometheus.io/path: /metrics }
+    spec:
+      securityContext: { runAsNonRoot: true, runAsUser: 10001, fsGroup: 10001 }
+      containers:
+        - name: api
+          image: ghcr.io/your-org/catsfi-finsight:latest
+          ports: [{ containerPort: 8000 }]
+          envFrom:
+            - configMapRef: { name: finsight-config }
+            - secretRef: { name: finsight-secrets }   # OPENAI_API_KEY, API_KEYS, SEC_USER_AGENT
+          resources:
+            requests: { cpu: 250m, memory: 768Mi }
+            limits: { cpu: "1", memory: 1536Mi }
+          readinessProbe: { httpGet: { path: /readyz, port: 8000 }, initialDelaySeconds: 10, periodSeconds: 10 }
+          livenessProbe: { httpGet: { path: /healthz, port: 8000 }, initialDelaySeconds: 20, periodSeconds: 20 }
+          securityContext: { allowPrivilegeEscalation: false, readOnlyRootFilesystem: false, capabilities: { drop: [ALL] } }
+          volumeMounts: [{ name: data, mountPath: /app/data }]
+      volumes: [{ name: data, emptyDir: {} }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finsight-api
+spec:
+  selector: { app: finsight-api }
+  ports: [{ port: 80, targetPort: 8000 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: qdrant
+spec:
+  serviceName: qdrant
+  replicas: 1
+  selector: { matchLabels: { app: qdrant } }
+  template:
+    metadata:
+      labels: { app: qdrant }
+    spec:
+      containers:
+        - name: qdrant
+          image: qdrant/qdrant:v1.13.4
+          ports: [{ containerPort: 6333 }]
+          readinessProbe: { httpGet: { path: /readyz, port: 6333 } }
+          resources:
+            requests: { cpu: 200m, memory: 512Mi }
+          volumeMounts: [{ name: storage, mountPath: /qdrant/storage }]
+  volumeClaimTemplates:
+    - metadata: { name: storage }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: { requests: { storage: 5Gi } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+spec:
+  selector: { app: qdrant }
+  ports: [{ port: 6333, targetPort: 6333 }]
